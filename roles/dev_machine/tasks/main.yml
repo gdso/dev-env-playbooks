@@ -1,0 +1,12 @@
+---
+
+- name: Include ./set_dev_machine_facts.yml tasks
+  import_tasks: ./set_dev_machine_facts.yml
+
+- name: Install asdf
+  tags: [install_asdf]
+  import_tasks: ./install_asdf.yml
+
+# - name: Install nushell
+#   tags: [install_nushell]
+#   import_tasks: ./install_nushell.yml

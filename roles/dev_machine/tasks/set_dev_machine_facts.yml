@@ -1,0 +1,27 @@
+---
+
+- name: "set dev_machine_distro fact"
+  tags: [ always ]
+  set_fact:
+    dev_machine_is_macos: "{{ ansible_facts['os_family'] == 'Darwin' }}"
+    dev_machine_is_linux: "{{ ansible_facts['os_family'] == 'Linux' }}"
+
+- name: "debug dev_machine_distro"
+  debug:
+    var: dev_machine_is_macos
+
+
+- name: Set the user's home directory as a fact (ansible_user_dir)
+  tags: [ always ]
+  ansible.builtin.set_fact:
+    # ansible_user_dir will resolve to /home/<username> or /Users/<username>
+    # on Linux/macOS respectively, which is usually correct for the home directory.
+    # If for some reason you need a different user's home, you could
+    # define `ansible_user_dir` explicitly for that user.
+    ansible_user_dir: "{{ ansible_env.HOME }}"
+
+- name: Set home_usr_releases path as a fact/variable
+  tags: [always] 
+  ansible.builtin.set_fact:
+    home_usr_releases: "{{ ansible_user_dir }}/usr/releases/"
+

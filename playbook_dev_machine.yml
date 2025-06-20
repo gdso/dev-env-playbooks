@@ -1,0 +1,25 @@
+---
+
+- name: playbook_dev_machine.yml
+  hosts: dev_machine
+  gather_facts: true
+  tasks:
+
+    # - name: Set asdf release URL and filename as facts
+    #   ansible.builtin.set_fact:
+    #     asdf_release_url:  "https://github.com/asdf-vm/asdf/releases/download/v0.18.0/asdf-v0.18.0-darwin-arm64.tar.gz"
+    #     asdf_release_tar_filename: "asdf-v0.18.0-darwin-arm64.tar.gz"
+    #
+    - name: "Include dev_machine role"
+      import_role:
+        name: dev_machine
+
+  # - name: "set dev_machine_distro fact"
+  #   set_fact:
+  #     dev_machine_is_macos: "{{ ansible_facts['os_family'] == 'Darwin' }}"
+  #     dev_machine_is_linux: "{{ ansible_facts['os_family'] == 'Linux' }}"
+  #
+  # - name: "debug dev_machine_distro"
+  #   debug:
+  #     var: dev_machine_is_macos
+

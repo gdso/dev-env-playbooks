@@ -1,0 +1,11 @@
+# This is a `.tool-versions` configuration file for `asdf`.
+# See https://asdf-vm.com/manage/commands.html for commands.
+
+# Install `uv` asdf plugin, see https://github.com/asdf-community/asdf-uv?tab=readme-ov-file:
+# `uv` is a Python version and package manager, supposedly more reliable than `pip`.
+uv 0.7.8
+
+# Install plugin for gojq (https://github.com/jimmidyson/asdf-gojq):
+# asdf plugin-add gojq https://github.com/jimmidyson/asdf-gojq.git
+# gojq 0.12.13
+

@@ -1,0 +1,89 @@
+---
+
+
+- name: Ensure downloads directory exists
+  ansible.builtin.file:
+    path: "{{ home_usr_releases }}"
+    state: directory
+    mode: '0755'
+
+
+- name: Set fact with filename without extension
+  ansible.builtin.set_fact:
+    asdf_release_url:  "https://github.com/asdf-vm/asdf/releases/download/v0.18.0/asdf-v0.18.0-darwin-arm64.tar.gz"
+
+- name: Set asdf release tar filename
+  ansible.builtin.set_fact:
+    asdf_release_tar_filename: "{{ asdf_release_url | ansible.builtin.urlsplit('path') | ansible.builtin.basename }}"
+
+- name: Set asdf release name
+  ansible.builtin.set_fact:
+    # asdf_release_name: "{{ asdf_release_tar_filename | ansible.builtin.split('.') | first }}"
+    asdf_release_name: "{{ asdf_release_tar_filename | replace('.tar.gz', '') }}"
+
+- name: Debug asdf_release_url, asdf_release_name, asdf_release_tar_filename
+  ansible.builtin.debug:
+    msg:
+      - "asdf_release_url: {{ asdf_release_url }}"
+      - "asdf_release_name: {{ asdf_release_name }}"
+      - "asdf_release_tar_filename: {{ asdf_release_tar_filename }}"
+
+
+- name: Download asdf v0.18.0 for macOS ARM64
+  ansible.builtin.get_url:
+    url: "{{ asdf_release_url }}"
+    dest: "{{ home_usr_releases }}{{ asdf_release_tar_filename }}"
+    # Here's the checksum from the releases page:
+    checksum: "sha256:5c82af09a9b17bb71195cd1c0a6baa1c7c4491b837ac601c42853e553b50a618"
+    # checksum: "sha256:6ef2a30b3558f60b4352b27072a2e4c02283a0058b73fcfcf890453d537f191b" # Recommended for integrity
+    mode: '0644'
+
+- name: Ensure release direcotry directory
+  ansible.builtin.file:
+    path: "{{ home_usr_releases }}{{ asdf_release_name }}/" 
+    state: directory
+
+- name: Extract asdf v0.18.0-darwin-arm64.tar.gz w/ unarchive module
+  ansible.builtin.unarchive:
+    src: "{{ home_usr_releases }}{{ asdf_release_tar_filename }}"
+    dest: "{{ home_usr_releases }}{{ asdf_release_name }}/"
+    remote_src: yes # Indicates that the source file is on the remote host
+    mode: '0755'    # Sets permissions for extracted files/directories
+  when: dev_machine_is_linux
+
+- name: Extract asdf v0.18.0-darwin-arm64.tar.gz w/ tar
+  ansible.builtin.command:
+    cmd: > 
+      tar -xzf {{ home_usr_releases }}{{ asdf_release_tar_filename }} 
+      -C {{ home_usr_releases }}{{ asdf_release_name }}/
+  when: dev_machine_is_macos
+
+- name: Set shell_profile_path fact on linux
+  ansible.builtin.set_fact:
+    shell_profile_path: "{{ ansible_user_dir }}/.bashrc" 
+  when: dev_machine_is_linux 
+
+
+- name: Set shell_profile_path fact on macOS
+  ansible.builtin.set_fact:
+    shell_profile_path: "{{ ansible_user_dir }}/.zshrc" 
+  when: dev_machine_is_macos
+
+
+- name: Ensure asdf binary is in $PATH
+  ansible.builtin.lineinfile:
+    path: "{{ shell_profile_path }}"
+    insertbefore: '^export PATH='
+    line: 'PATH="{{ home_usr_releases }}{{ asdf_release_name }}/:$PATH"'
+    regexp: '^PATH="{{ home_usr_releases }}{{ asdf_release_name }}/"'
+    state: present
+    backup: yes # Creates a backup of the original file before modification
+
+- name: Ensure asdf shims are in $PATH
+  ansible.builtin.lineinfile:
+    path: "{{ shell_profile_path }}"
+    insertbefore: '^export PATH='
+    line: 'PATH="$HOME/.asdf/shims:$PATH"'
+    regexp: '^PATH="$HOME/.asdf/shims"'
+    state: present
+    backup: yes # Creates a backup of the original file before modification
