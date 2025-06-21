@@ -7,6 +7,10 @@
   tags: [install_asdf]
   import_tasks: ./install_asdf.yml
 
+- name: Install chezmoi
+  tags: [install_chezmoi]
+  import_tasks: ./install_chezmoi.yml
+
 # - name: Install nushell
 #   tags: [install_nushell]
 #   import_tasks: ./install_nushell.yml

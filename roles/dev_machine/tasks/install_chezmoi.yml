@@ -1,0 +1,61 @@
+---
+
+- name: Set ~/.tools-version path as a fact
+  ansible.builtin.set_fact: 
+    home_tool_versions_path:  "{{ ansible_user_dir }}/.tool-versions"
+
+- name: Ensure ~/.tools-version exists
+  ansible.builtin.file:
+    path: "{{ home_tool_versions_path }}"
+    state: touch
+
+- name: Set chezmoi LKG version, release url and checksum
+  ansible.builtin.set_fact: 
+    # Consule https://github.com/twpayne/chezmoi/releases for latest release:
+    chezmoi_version: "2.62.6"
+
+ 
+- name: Ensure asdf .tool-versions has my LKG of chezmoi installed
+  ansible.builtin.blockinfile:
+    path: "{{ home_tool_versions_path }}"
+    append_newline: true
+    prepend_newline: true
+    state: present
+    block: |
+      # See Ansible playbook https://github.com/gdso/dev-env-playbooks
+      # Depends on plugin https://github.com/joke/asdf-chezmoi being installed:
+      chezmoi {{ chezmoi_version }}
+    backup: true
+
+- name: Install asdf chezmoi plugin
+  ansible.builtin.command:
+    cmd: asdf plugin add chezmoi
+
+- name: Install chezmoi {{ chezmoi_version }} via asdf
+  ansible.builtin.command:
+    chdir: "{{ ansible_user_dir }}"
+    cmd: asdf install chezmoi
+
+- name: Set chezmoi chezmoi.yml configuration path as a fact
+  ansible.builtin.set_fact:
+    chezmoi_config_path: "{{ ansible_user_dir }}/.config/chezmoi/chezmoi.yaml"
+
+- name: Put the chezmoi config in place
+  ansible.builtin.file:
+    state: touch
+    path: "{{ chezmoi_config_path }}"
+
+- name: Write config block to into {{ chezmoi_config_path }}
+  ansible.builtin.blockinfile:
+    path: "{{ chezmoi_config_path }}"
+    state: present
+    block: |
+      # NOTE the default sourceDir is ~/.local/share/chezmoi -- which is 
+      # why I'm commenting it out, but leaving it here for reference:
+      # sourceDir: "~/.local/share/chezmoi"
+      edit:
+        command: nvim
+      
+- name: Init chezmoi 
+  ansible.builtin.command:
+    cmd: chezmoi init git@github.com:gdso/one-dot-to-rule-them.git
