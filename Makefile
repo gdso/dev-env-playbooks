@@ -17,5 +17,5 @@ setup_dev_machine:
 	uv run ansible-playbook \
 	--inventory inventory.yml  \
 	./playbook_dev_machine.yml  \
-	--tags "install_nushell" \
+	# --tags "install_neovim" \
 	# -vvv

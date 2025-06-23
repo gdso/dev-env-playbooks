@@ -1,0 +1,31 @@
+---
+
+# NOTE I was under the impression that neovim's lazy.nvim required
+# luarocks (a lua package manager), and lua 5.1 (since neovim's scripting environment is locked to a fork of lua 5.1). However, 
+# lazy.nvim has support for `hererocks`, a python script which installs a self-contained Lua and Luarocks environment, hence obviating the need for lua/luarocks to be installed on the system.
+
+# - name: Set ~/.tools-version path as a fact
+#   ansible.builtin.set_fact: 
+#     home_tool_versions_path:  "{{ ansible_user_dir }}/.tool-versions"
+#
+# - name: Ensure ~/.tools-version exists
+#   ansible.builtin.file:
+#     path: "{{ home_tool_versions_path }}"
+#     state: touch
+#
+#
+# - name: > 
+#     Verify that clang is installed. 
+#     See instructions at https://github.com/Stratus3D/asdf-lua
+#   ansible.builtin.command:
+#     cmd: clang --version
+#   register: clang_version
+#   # FYI clang_version.rc == 0 when command was successful:
+#   failed_when: clang_version.rc != 0
+#
+#
+# - name: Set lua LKG version
+#   ansible.builtin.set_fact: 
+#     lua_version: "5.4.8"
+#   
+#

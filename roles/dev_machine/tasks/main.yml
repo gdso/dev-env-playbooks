@@ -11,6 +11,14 @@
   tags: [install_chezmoi]
   import_tasks: ./install_chezmoi.yml
 
+# - name: Install neovim's dependencies
+#   tags: [install_neovim_deps, install_neovim]
+#   import_tasks: ./install_neovim_deps.yml
+
+  tags: [install_neovim]
+  tags: [install_neovim]
+  import_tasks: ./install_neovim.yml
+
 # - name: Install nushell
 #   tags: [install_nushell]
 #   import_tasks: ./install_nushell.yml

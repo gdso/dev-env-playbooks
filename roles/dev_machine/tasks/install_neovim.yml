@@ -1,0 +1,77 @@
+---
+
+- name: Ensure asdf is installed
+  ansible.builtin.command:
+    cmd: asdf --version
+  register: asdf_version
+  failed_when: asdf_version.rc != 0
+
+- name: Set neovim LKG version
+  ansible.builtin.set_fact:
+    # As of Jun 17, 2025, latest stable release is:
+    neovim_version: "0.11.2"
+
+- name: Set nvim_lazy_migration_path fact
+  ansible.builtin.set_fact:
+    nvim_lazy_migration_dir: "{{ ansible_user_dir }}/src/nvim_lazy_migration/"
+
+- name: Ensure {{ nvim_lazy_migration_dir }} directory exists
+  ansible.builtin.file:
+    path: "{{ nvim_lazy_migration_dir }}"
+    state: directory
+      
+- name: Ensure asdf .tool-versions in isolated directory exists
+  ansible.builtin.file:
+    path: "{{ nvim_lazy_migration_dir }}.tool-versions"
+    state: touch
+
+- name: Ensure asdf .tool-versions includes neovim
+  ansible.builtin.blockinfile:
+    path: "{{ nvim_lazy_migration_dir }}.tool-versions"
+    append_newline: true
+    prepend_newline: true
+    state: present
+    block: |
+      # See Ansible playbook https://github.com/gdso/dev-env-playbooks
+      # Depends on plugin https://github.com/joke/asdf-chezmoi being installed:
+      neovim {{ neovim_version }}
+    backup: true
+
+- name: Install asdf neovim plugin 
+  ansible.builtin.command:
+    cmd: asdf plugin add neovim
+
+- name: Install neovim {{ neovim_version }} via asdf
+  ansible.builtin.command:
+    chdir: "{{ nvim_lazy_migration_dir }}"
+    cmd: asdf install neovim
+
+- name: Ensure bin directory exists {{ nvim_lazy_migration_dir }}
+  ansible.builtin.file:
+    state: directory
+    path: "{{ nvim_lazy_migration_dir }}bin" 
+
+- name: Create a script that will launch nvim with isolated config
+  ansible.builtin.template:
+    src: nvim_lazy.j2
+    dest: "{{ nvim_lazy_migration_dir }}bin/nvim_lazy"
+    mode: '0755' # Make it executable
+
+- name: Assert that shell_profile_path is set
+  ansible.builtin.assert:
+    that:
+      - shell_profile_path is defined
+    fail_msg: "shell_profile_path fact is not set. Please ensure it is defined in your playbook."
+
+- name: Ensure {{ nvim_lazy_migration_dir}}bin binary is in $PATH
+  ansible.builtin.lineinfile:
+    path: "{{ shell_profile_path }}"
+    insertbefore: '^export PATH='
+    line: 'PATH="{{ nvim_lazy_migration_dir}}bin/:$PATH"'
+    regexp: '^PATH="{{ nvim_lazy_migration_dir}}bin'
+    state: present
+    backup: yes # Creates a backup of the original file before modification
+
+# NOTE to confirm that the nvim_lazy is pointing to the correct 
+# config directory, type :echo stdpath("config")
+

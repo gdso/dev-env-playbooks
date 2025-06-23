@@ -25,3 +25,17 @@
   ansible.builtin.set_fact:
     home_usr_releases: "{{ ansible_user_dir }}/usr/releases/"
 
+
+- name: Set shell_profile_path fact on linux
+  tags: [always] 
+  ansible.builtin.set_fact:
+    shell_profile_path: "{{ ansible_user_dir }}/.bashrc" 
+  when: dev_machine_is_linux 
+
+
+- name: Set shell_profile_path fact on macOS
+  tags: [always] 
+  ansible.builtin.set_fact:
+    shell_profile_path: "{{ ansible_user_dir }}/.zshrc" 
+  when: dev_machine_is_macos
+
